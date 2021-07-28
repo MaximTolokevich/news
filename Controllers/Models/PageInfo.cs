@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace news.Models
+namespace news.Controllers.Models
 {
     public class PageInfo
     {

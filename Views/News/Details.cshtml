@@ -1,4 +1,4 @@
-﻿@model news.Models.News
+﻿@model news.Controllers.Models.NewsViewModel
 
 @{
     ViewData["Title"] = "Details";
@@ -10,17 +10,29 @@
     <h4>News</h4>
     <hr />
     <dl class="row">
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.newsContent)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.newsContent)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.DateNews)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.DateNews)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.CategoryList.First())
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.CategoryList.First())
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.NewsAuthors)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.NewsAuthors)
         </dd>
     </dl>
 </div>

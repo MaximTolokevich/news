@@ -1,4 +1,4 @@
-﻿@model IEnumerable<news.Models.News>
+﻿@model IEnumerable<news.Controllers.Models.NewsViewModel>
 
 @{
     ViewData["Title"] = "Index";
@@ -18,6 +18,12 @@
             <th>
                 @Html.DisplayNameFor(model => model.DateNews)
             </th>
+            <th>
+                @Html.DisplayNameFor(model => model.CategoryList.First().Text)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.NewsAuthors)
+            </th>
             <th></th>
         </tr>
     </thead>
@@ -29,6 +35,12 @@
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.DateNews)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.CategoryList.First().Text)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem=>item.NewsAuthors)
             </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |

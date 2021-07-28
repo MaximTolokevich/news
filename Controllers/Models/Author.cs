@@ -1,13 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace news.Models
+namespace news.Controllers.Models
 {
     public class Author
     {
+        [Required]
         public int Id { get; set; }
         [Required]
         public string FirstName { get; set; }
@@ -19,7 +17,7 @@ namespace news.Models
         public string Password { get; set; }
         [Required]
         public string Email { get; set; }
-        public List<News> News { get; set; } = new List<News>();
+        public List<NewsViewModel> News { get; set; } = new List<NewsViewModel>();
     }
 
 }

@@ -1,40 +1,41 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using news.Controllers.Models;
+using news.Services;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using news.Models;
-using news.Repository;
 
 namespace news.Controllers
 {
     public class AuthorsController : Controller
     {
-        private readonly NewsContext _context;
 
-        public AuthorsController(NewsContext context)
+        private readonly IService<Author> service;
+        
+
+        public AuthorsController(IService<Author> _service)
         {
-            _context = context;
+            service = _service;
+
         }
 
         // GET: Authors
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
-            return View(await _context.Authors.ToListAsync());
+            
+            return View( service.GetAll().ToList());
         }
 
         // GET: Authors/Details/5
-        public async Task<IActionResult> Details(int? id)
+        public IActionResult Details(int? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
 
-            var author = await _context.Authors
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var author =  service.GetAll()
+                .FirstOrDefault(m => m.Id == id);
             if (author == null)
             {
                 return NotFound();
@@ -54,26 +55,26 @@ namespace news.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,FirstName,LastName,FullName,Password,Email")] Author author)
+        public IActionResult Create([Bind("FirstName,LastName,Password,Email")] Author author)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(author);
-                await _context.SaveChangesAsync();
+                service.Create(author);
+
                 return RedirectToAction(nameof(Index));
             }
             return View(author);
         }
 
         // GET: Authors/Edit/5
-        public async Task<IActionResult> Edit(int? id)
+        public IActionResult Edit(int? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
 
-            var author = await _context.Authors.FindAsync(id);
+            var author = service.Get((int)id);
             if (author == null)
             {
                 return NotFound();
@@ -86,7 +87,7 @@ namespace news.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,FirstName,LastName,FullName,Password,Email")] Author author)
+        public IActionResult Edit(int id, [Bind("Id,FirstName,LastName,FullName,Password,Email")] Author author)
         {
             if (id != author.Id)
             {
@@ -97,8 +98,7 @@ namespace news.Controllers
             {
                 try
                 {
-                    _context.Update(author);
-                    await _context.SaveChangesAsync();
+                    service.Update(author);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -117,15 +117,15 @@ namespace news.Controllers
         }
 
         // GET: Authors/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        public IActionResult Delete(int? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
 
-            var author = await _context.Authors
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var author =  service.GetAll()
+                .FirstOrDefault(m => m.Id == id);
             if (author == null)
             {
                 return NotFound();
@@ -137,17 +137,14 @@ namespace news.Controllers
         // POST: Authors/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public IActionResult DeleteConfirmed(int id)
         {
-            var author = await _context.Authors.FindAsync(id);
-            _context.Authors.Remove(author);
-            await _context.SaveChangesAsync();
+
+            service.Delete(id);
+
             return RedirectToAction(nameof(Index));
         }
 
-        private bool AuthorExists(int id)
-        {
-            return _context.Authors.Any(e => e.Id == id);
-        }
+        private bool AuthorExists(int id) => service.GetAll().Any(e => e.Id == id);
     }
 }

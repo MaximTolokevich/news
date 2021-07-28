@@ -1,11 +1,16 @@
+using AutoMapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using news.Interfaces;
-using news.Models;
-using news.Repository;
+using news.Extensions.Mapping;
+using news.Repositories;
+using news.Repositories.Models;
+using news.Repositories.Data;
+using news.Services;
+using Microsoft.EntityFrameworkCore;
+using news.Controllers;
 
 namespace news
 {
@@ -21,9 +26,23 @@ namespace news
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            var mappingConfig = new MapperConfiguration(mc =>
+                    mc.AddProfile(new MappingProfile())
+                );
+            IMapper mapper = mappingConfig.CreateMapper();
+            services.AddSingleton(mapper);
             services.AddControllersWithViews();
-            services.AddDbContext<NewsContext>();
-           
+            services.AddDbContext<NewsContext>(options=>options.EnableSensitiveDataLogging()
+            .EnableServiceProviderCaching(false)
+            .UseMySql(Configuration.GetConnectionString("news"),new MySqlServerVersion(new System.Version(8, 0, 24))),
+            ServiceLifetime.Transient
+            );
+            services.AddScoped<IRepository<Author>, AuthorRepository>();
+            services.AddScoped<IService<Services.Models.Author>, AuthorService>();
+            services.AddScoped<IRepository<Category>, CategoryRepository>();
+            services.AddScoped<IService<Services.Models.Category>, CategoryService>();
+            services.AddScoped<IRepository<News>, NewsRepository>();
+            services.AddScoped<IService<Services.Models.News>, NewsService>();
 
         }
 

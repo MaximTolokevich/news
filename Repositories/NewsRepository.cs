@@ -1,36 +1,41 @@
-﻿using news.Interfaces;
-using news.Models;
+﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
+using news.Repositories.Data;
+using news.Repositories.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
-namespace news.Repository
+namespace news.Repositories
 {
     public class NewsRepository : IRepository<News>
     {
         private NewsContext context;
-        public NewsRepository(NewsContext newsContext) 
+        private readonly IMapper map;
+        public NewsRepository(NewsContext newsContext,IMapper mapper) 
         {
             context = newsContext;
+            map = mapper;
         }
-        bool IRepository<News>.Create(News news)
+        public bool Create(News news)
         {
             if (news== null)
             {
                 return false;
             }
-            News addNew = new News
+            List<Author> list = new List<Author>(); 
+            foreach (var item in news.NewsAuthors)
             {
-                newsContent = news.newsContent,
-                DateNews = news.DateNews
-            };
-            context.News.Add(addNew);
+                context.Authors.Attach(item);
+                list.Add(context.Authors.Local.Single(x => x.Id == item.Id));
+            }
+            news.NewsAuthors = list;
+            context.News.Add(news);
             context.SaveChanges();
             return true;
         }
 
-        bool IRepository<News>.Delete(int Id)
+        public bool Delete(int Id)
         {
             if (Id<1)
             {
@@ -46,7 +51,7 @@ namespace news.Repository
             return true;
         }
 
-        News IRepository<News>.Get(int Id)
+        public News Get(int Id)
         {
             if (Id<1)
             {
@@ -55,12 +60,14 @@ namespace news.Repository
             return context.News.First(x=>x.Id==Id);
         }
 
-        IEnumerable<News> IRepository<News>.GetAll()
+        public IQueryable<News> GetAll()
         {
-            return context.News;
+            
+            return context.News.Include(x => x.Category).Include(x=>x.NewsAuthors);
+                
         }
 
-        bool IRepository<News>.Update(News news)
+        public bool Update(News news)
         {
             if (news==null)
             {
@@ -73,7 +80,9 @@ namespace news.Repository
             }
             CheckNewExist.newsContent = news.newsContent;
             CheckNewExist.DateNews = news.DateNews;
+            context.SaveChanges();
             return true;
         }
     }
 }
+                       

@@ -1,51 +1,53 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using news.Models;
-using news.Repository;
+using news.Controllers.Models;
+using news.Services;
+using AutoMapper;
 
 namespace news.Controllers
 {
     public class CategoriesController : Controller
     {
-        private readonly NewsContext _context;
+        private readonly IService<Services.Models.Category> service;
+        private readonly IMapper map;
 
-        public CategoriesController(NewsContext context)
+        public CategoriesController(IService<Services.Models.Category> _service, IMapper _mapper)
         {
-            _context = context;
+            service = _service;
+            map = _mapper;
         }
 
         // GET: Categories
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
-            return View(await _context.Categories.ToListAsync());
+            var a = map.Map<IEnumerable<Services.Models.Category>, IEnumerable<Category>>(service.GetAll());
+            return View(a);
         }
 
         // GET: Categories/Details/5
-        public async Task<IActionResult> Details(int? id)
+        public  IActionResult Details(int? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
-
-            var category = await _context.Categories
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (category == null)
+            var a = map.Map<Services.Models.Category, Category>(service.GetAll()
+                .FirstOrDefault(m => m.Id == id));  
+            if (a == null)
             {
                 return NotFound();
             }
-
-            return View(category);
+            return View(a);
         }
 
         // GET: Categories/Create
         public IActionResult Create()
         {
+            
             return View();
         }
 
@@ -54,26 +56,26 @@ namespace news.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,CategoryName")] Category category)
+        public IActionResult Create([Bind("Id,CategoryName")] Category category)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(category);
-                await _context.SaveChangesAsync();
+                var a = map.Map<Category, Services.Models.Category>(category);
+                service.Create(a);
                 return RedirectToAction(nameof(Index));
             }
             return View(category);
         }
 
         // GET: Categories/Edit/5
-        public async Task<IActionResult> Edit(int? id)
+        public  IActionResult Edit(int? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
 
-            var category = await _context.Categories.FindAsync(id);
+            var category =  service.Get((int)id);
             if (category == null)
             {
                 return NotFound();
@@ -86,19 +88,19 @@ namespace news.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,CategoryName")] Category category)
+        public IActionResult Edit(int id, [Bind("Id,CategoryName")] Category category)
         {
             if (id != category.Id)
             {
                 return NotFound();
             }
-
+            var a = map.Map<Category, Services.Models.Category>(category);
             if (ModelState.IsValid)
             {
                 try
                 {
-                    _context.Update(category);
-                    await _context.SaveChangesAsync();
+                    service.Update(a);
+
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -117,15 +119,15 @@ namespace news.Controllers
         }
 
         // GET: Categories/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        public IActionResult Delete(int? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
 
-            var category = await _context.Categories
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var category =  service.GetAll()
+                .FirstOrDefault(m => m.Id == id);
             if (category == null)
             {
                 return NotFound();
@@ -137,17 +139,15 @@ namespace news.Controllers
         // POST: Categories/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public IActionResult DeleteConfirmed(int id)
         {
-            var category = await _context.Categories.FindAsync(id);
-            _context.Categories.Remove(category);
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            service.Delete(id);
+            return (RedirectToAction(nameof(Index)));
         }
 
         private bool CategoryExists(int id)
         {
-            return _context.Categories.Any(e => e.Id == id);
+            return service.GetAll().Any(x => x.Id == id);
         }
     }
 }

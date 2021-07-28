@@ -1,17 +1,19 @@
-﻿using news.Interfaces;
-using news.Models;
+﻿using AutoMapper;
+using news.Repositories.Data;
+using news.Repositories.Models;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 
-namespace news.Repository
+namespace news.Repositories
 {
     public class AuthorRepository : IRepository<Author>, IChangePassword
     {
-        private NewsContext context;
-        public AuthorRepository(NewsContext newsContext)
+        private readonly NewsContext context;
+        private readonly IMapper map;
+        public AuthorRepository(NewsContext newsContext,IMapper mapper)
         {
             context = newsContext;
+            map = mapper;
         }
 
         public bool ChangePass(int id, string oldPass, string newPass)
@@ -21,7 +23,7 @@ namespace news.Repository
                 return false;
             }
             var findAuthor = context.Authors.Find(id);
-            if (findAuthor == null || oldPass!=findAuthor.Password)
+            if (findAuthor == null || oldPass != findAuthor.Password)
             {
                 return false;
             }
@@ -30,31 +32,24 @@ namespace news.Repository
             return true;
         }
 
-        bool IRepository<Author>.Create(Author author)
+        public bool Create(Author author)
         {
             if (author == null)
             {
                 throw new ArgumentNullException();
             }
-            var checkUniqueAuthor = context.Authors.Where(x => x.Email == author.Email);
+            var checkUniqueAuthor = context.Authors.Find(author.Id);
             if (checkUniqueAuthor != null)
             {
                 return false;
             }
-            Author newAuthor = new Author
-            {
-                FirstName = author.FirstName,
-                LastName = author.LastName,
-                FullName = author.FullName,
-                Password = author.Password
-
-            };
-            context.Authors.Add(newAuthor);
+            
+            context.Authors.Add(author);
             context.SaveChanges();
             return true;
         }
 
-        bool IRepository<Author>.Delete(int Id)
+        public bool Delete(int Id)
         {
             if (Id < 1)
             {
@@ -70,12 +65,13 @@ namespace news.Repository
             return true;
         }
 
-        IEnumerable<Author> IRepository<Author>.GetAll()
+        public IQueryable<Author> GetAll()
         {
+
             return context.Authors;
         }
 
-        Author IRepository<Author>.Get(int id)
+        public Author Get(int id)
         {
             if (id < 1)
             {
@@ -84,7 +80,7 @@ namespace news.Repository
             return context.Authors.First(x => x.Id == id);
         }
 
-        bool IRepository<Author>.Update(Author author)
+        public bool Update(Author author)
         {
             if (author == null)
             {
@@ -97,8 +93,10 @@ namespace news.Repository
             }
             findAuthor.FirstName = author.FirstName;
             findAuthor.LastName = author.LastName;
-            findAuthor.FullName = author.LastName;
+            findAuthor.FullName = author.FirstName + " " + author.LastName;
             findAuthor.Email = author.Email;
+
+            context.SaveChanges();
             return true;
         }
     }

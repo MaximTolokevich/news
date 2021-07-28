@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace news.Models
+namespace news.Repositories.Models
 {
     public class News
     {
@@ -14,9 +14,9 @@ namespace news.Models
         [DataType(DataType.Date)]
         [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}")]
         public DateTime DateNews { get; set; }
-        [Required]
-        public Category Category { get; set; }
-        public List<Author> NewsAuthors { get; set; } = new List<Author>();
+        public int CategoryId { get; set; }
+        public Category Category { get; set; } 
+        public IEnumerable<Author> NewsAuthors { get; set; } 
 
     }
 }

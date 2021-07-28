@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using news.Interfaces;
-using news.Models;
+using news.Repositories.Data;
+using news.Repositories.Models;
 
-namespace news.Repository
+namespace news.Repositories
 {
     public class CategoryRepository : IRepository<Category>
 
@@ -15,53 +13,56 @@ namespace news.Repository
         {
             context = newsContext;
         }
-        bool IRepository<Category>.Create(Category category)
+        public bool Create(Category category)
         {
             if (category == null)
             {
                 throw new ArgumentNullException();
             }
-            var CheckCategoryExist = context.Categories.Find(category.CategoryName);
+            var CheckCategoryExist = context.Categories.Find(category.Id);
             if (CheckCategoryExist!=null)
             {
                 return false;
             }
             Category newCategory = new Category
             {
+                Id = category.Id,
                 CategoryName = category.CategoryName
             };
-            context.Categories.Add(category);
+            context.Categories.Add(newCategory);
             context.SaveChanges();
             return true;
         }
 
-        bool IRepository<Category>.Delete(int Id)
+        public bool Delete(int Id)
         {
             if (Id<1)
             {
                 return false;
             }
             var CheckCategoryExist = context.Categories.Find(Id);
+             
             if (CheckCategoryExist == null)
             {
                 return false;
             }
-            context.Remove(CheckCategoryExist);
+            
+            context.Categories.Remove(CheckCategoryExist);
             context.SaveChanges();
             return true;
         }
 
-        Category IRepository<Category>.Get(int Id)
+        public Category Get(int Id)
         {
             return  context.Categories.First(x => x.Id == Id);
         }
 
-        IEnumerable<Category> IRepository<Category>.GetAll()
+        public IQueryable<Category> GetAll()
         {
             return context.Categories;
         }
 
-        bool IRepository<Category>.Update(Category category)
+        public bool Update(Category category)
         {
             if (category==  null)
             {
@@ -73,6 +74,7 @@ namespace news.Repository
                 return false;
             }
             findAuthor.CategoryName = category.CategoryName;
+            context.SaveChanges();
             return true;
         }
     }

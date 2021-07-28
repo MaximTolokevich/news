@@ -1,51 +1,74 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+using news.Services;
+using news.Controllers.Models;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using news.Models;
-using news.Repository;
+using AutoMapper;
+using news.Services.Models;
 
 namespace news.Controllers
 {
     public class NewsController : Controller
     {
-        private readonly NewsContext _context;
+        private readonly IService<News> Service;
+        private readonly IService<Services.Models.Category> CategoryService;
+        private readonly IService<Services.Models.Author> AuthorService;
+        private readonly IMapper map;
 
-        public NewsController(NewsContext context)
+        public NewsController(IService<News> _service, IService<Services.Models.Category> _CategoryService, IService<Services.Models.Author> _AuthorService,IMapper mapper)
         {
-            _context = context;
+            Service = _service;
+            CategoryService = _CategoryService;
+            AuthorService = _AuthorService;
+            map = mapper;
         }
 
         // GET: News
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
-            return View(await _context.News.ToListAsync());
+            var a = map.Map<IEnumerable<Services.Models.News>, IEnumerable<NewsViewModel> >(Service.GetAll());
+            return View(a);
         }
 
         // GET: News/Details/5
-        public async Task<IActionResult> Details(int? id)
+        public IActionResult Details(int? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
-
-            var news = await _context.News
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (news == null)
+            var a = map.Map< News, NewsViewModel> (Service.GetAll().FirstOrDefault(m => m.Id == id));
+            
+            if (a == null)
             {
                 return NotFound();
             }
 
-            return View(news);
+            return View(a);
         }
 
         // GET: News/Create
         public IActionResult Create()
         {
+            //ViewBag.Category = CategoryService.GetAll()
+            //    .Select(x => new SelectListItem
+            //    {
+            //        Text = x.CategoryName,
+            //        Value = x.CategoryId.ToString()
+            //    }).ToList();
+            ViewBag.Category = new SelectList(CategoryService.GetAll(), "CategoryId", "CategoryName");
+
+            var authors =  AuthorService.GetAll()
+                .Select(a => new
+                {
+                    a.Id,
+                    a.FullName
+                }).ToList();
+            ViewBag.Authors = new MultiSelectList(authors, "Id", "FullName");
+
             return View();
         }
 
@@ -54,31 +77,35 @@ namespace news.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,newsContent,DateNews")] News news)
+        public IActionResult Create( NewsViewModel news)
         {
+
             if (ModelState.IsValid)
+
             {
-                _context.Add(news);
-                await _context.SaveChangesAsync();
+                var a = map.Map<  NewsViewModel, News> (news);
+                Service.Create(a);
+                
                 return RedirectToAction(nameof(Index));
             }
+            
             return View(news);
         }
 
         // GET: News/Edit/5
-        public async Task<IActionResult> Edit(int? id)
+        public IActionResult Edit(int? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
-
-            var news = await _context.News.FindAsync(id);
-            if (news == null)
+            var a = map.Map<News, NewsViewModel >(Service.Get((int)id));
+            
+            if (a == null)
             {
                 return NotFound();
             }
-            return View(news);
+            return View(a);
         }
 
         // POST: News/Edit/5
@@ -86,19 +113,19 @@ namespace news.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,newsContent,DateNews")] News news)
+        public IActionResult Edit(int id,  NewsViewModel news)
         {
             if (id != news.Id)
             {
                 return NotFound();
             }
-
+            var a = map.Map<NewsViewModel,News >(news);
             if (ModelState.IsValid)
             {
+                
                 try
                 {
-                    _context.Update(news);
-                    await _context.SaveChangesAsync();
+                    Service.Update(a);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -113,19 +140,19 @@ namespace news.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(news);
+            return View(a);
         }
 
         // GET: News/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        public IActionResult Delete(int? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
 
-            var news = await _context.News
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var news =  Service.GetAll()
+                .FirstOrDefault(m => m.Id == id);
             if (news == null)
             {
                 return NotFound();
@@ -137,17 +164,15 @@ namespace news.Controllers
         // POST: News/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public IActionResult DeleteConfirmed(int id)
         {
-            var news = await _context.News.FindAsync(id);
-            _context.News.Remove(news);
-            await _context.SaveChangesAsync();
+            Service.Delete(id);
             return RedirectToAction(nameof(Index));
         }
 
         private bool NewsExists(int id)
         {
-            return _context.News.Any(e => e.Id == id);
+            return Service.GetAll().Any(x => x.Id == id);
         }
     }
 }

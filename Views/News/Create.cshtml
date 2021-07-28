@@ -1,5 +1,4 @@
-﻿@model news.Models.News
-
+﻿@model news.Controllers.Models.NewsViewModel
 @{
     ViewData["Title"] = "Create";
 }
@@ -23,8 +22,18 @@
                 <span asp-validation-for="DateNews" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
+                <label asp-for="CategoryList" class="control-label"></label>
+                @Html.DropDownListFor(m=>m.CategoryId,(SelectList)ViewBag.Category,"Select Category")
+               
             </div>
+            <div class="form-group">
+                <label asp-for="NewsAuthors" class="control-label"></label>
+                @Html.ListBoxFor(x=>x.NewsAuthors, (MultiSelectList)ViewBag.Authors)
+                
+            </div>
+                <div class="form-group">
+                    <input type="submit" value="Create" class="btn btn-primary" />
+                </div>
         </form>
     </div>
 </div>
