@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using System.Linq;
 
 namespace news.Extensions.Mapping
 {
@@ -14,15 +13,19 @@ namespace news.Extensions.Mapping
             CreateMap<Repositories.Models.Category, Services.Models.Category>()
                 .ReverseMap();
 
-            CreateMap<Controllers.Models.NewsViewModel, Services.Models.News>()
+            CreateMap<Controllers.Models.GetOptionsListsViewcs, Services.Models.News>()
                 .ReverseMap()
-                .ForMember(vm=>vm.CategoryList,o=>o.MapFrom(src=>src.Category.Id))
-                .ForMember(vm=>vm.NewsAuthors,o=>o.MapFrom(src=>src.NewsAuthors.Select(x=>x.Id)));       
+                .ForMember(x => x.SelectedAuthors, opt => opt.Ignore())
+                .ForMember(x => x.CategoryList, opt => opt.Ignore())
+                .ForMember(x=>x.NewsAuthors,opt=>opt.Ignore())
+                .ForMember(x=>x.Category,opt=>opt.Ignore());
+                
+                
             CreateMap<Controllers.Models.Author, Services.Models.Author>()
                 .ReverseMap();
             CreateMap<Controllers.Models.Category, Services.Models.Category>()
                 .ReverseMap();
-
+            
         }
     }
 }

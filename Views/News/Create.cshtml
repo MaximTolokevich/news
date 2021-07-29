@@ -1,4 +1,4 @@
-﻿@model news.Controllers.Models.NewsViewModel
+﻿@model news.Controllers.Models.GetOptionsListsViewcs
 @{
     ViewData["Title"] = "Create";
 }
@@ -23,13 +23,12 @@
             </div>
             <div class="form-group">
                 <label asp-for="CategoryList" class="control-label"></label>
-                @Html.DropDownListFor(m=>m.CategoryId,(SelectList)ViewBag.Category,"Select Category")
+               <select name="CategoryId" asp-items="Model.CategoryList"></select>
                
             </div>
             <div class="form-group">
                 <label asp-for="NewsAuthors" class="control-label"></label>
-                @Html.ListBoxFor(x=>x.NewsAuthors, (MultiSelectList)ViewBag.Authors)
-                
+                @Html.ListBoxFor(m => m.SelectedAuthors, new SelectList(Model.NewsAuthors, "Id", "FullName"))
             </div>
                 <div class="form-group">
                     <input type="submit" value="Create" class="btn btn-primary" />

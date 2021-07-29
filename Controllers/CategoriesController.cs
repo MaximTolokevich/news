@@ -75,12 +75,12 @@ namespace news.Controllers
                 return NotFound();
             }
 
-            var category =  service.Get((int)id);
-            if (category == null)
+            var a = map.Map<Services.Models.Category, Category>(service.Get((int)id));
+            if (a == null)
             {
                 return NotFound();
             }
-            return View(category);
+            return View(a);
         }
 
         // POST: Categories/Edit/5
@@ -104,7 +104,7 @@ namespace news.Controllers
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!CategoryExists(category.Id))
+                    if (!CategoryExists(a.Id))
                     {
                         return NotFound();
                     }
@@ -115,7 +115,7 @@ namespace news.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(category);
+            return View(a);
         }
 
         // GET: Categories/Delete/5
@@ -126,14 +126,13 @@ namespace news.Controllers
                 return NotFound();
             }
 
-            var category =  service.GetAll()
-                .FirstOrDefault(m => m.Id == id);
-            if (category == null)
+            var a = map.Map<Services.Models.Category, Category>(service.GetAll().FirstOrDefault(m => m.Id == id));
+            if (a == null)
             {
                 return NotFound();
             }
 
-            return View(category);
+            return View(a);
         }
 
         // POST: Categories/Delete/5
@@ -141,13 +140,15 @@ namespace news.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult DeleteConfirmed(int id)
         {
-            service.Delete(id);
+            var a = map.Map<Services.Models.Category, Category>(service.Get(id));
+            service.Delete(a.Id);
             return (RedirectToAction(nameof(Index)));
         }
 
         private bool CategoryExists(int id)
         {
-            return service.GetAll().Any(x => x.Id == id);
+            var a = map.Map<IEnumerable<Services.Models.Category>, IEnumerable<Category>>(service.GetAll());
+            return a.Any(x => x.Id == id);
         }
     }
 }

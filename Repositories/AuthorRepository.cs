@@ -9,11 +9,10 @@ namespace news.Repositories
     public class AuthorRepository : IRepository<Author>, IChangePassword
     {
         private readonly NewsContext context;
-        private readonly IMapper map;
-        public AuthorRepository(NewsContext newsContext,IMapper mapper)
+        
+        public AuthorRepository(NewsContext newsContext)
         {
             context = newsContext;
-            map = mapper;
         }
 
         public bool ChangePass(int id, string oldPass, string newPass)
@@ -43,7 +42,7 @@ namespace news.Repositories
             {
                 return false;
             }
-            
+            author.FullName = author.FirstName + " " + author.LastName; 
             context.Authors.Add(author);
             context.SaveChanges();
             return true;
@@ -95,6 +94,7 @@ namespace news.Repositories
             findAuthor.LastName = author.LastName;
             findAuthor.FullName = author.FirstName + " " + author.LastName;
             findAuthor.Email = author.Email;
+            findAuthor.Password = author.Password;
 
             context.SaveChanges();
             return true;

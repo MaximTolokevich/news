@@ -1,4 +1,4 @@
-﻿@model IEnumerable<news.Controllers.Models.NewsViewModel>
+﻿@model IEnumerable<news.Controllers.Models.GetOptionsListsViewcs>
 
 @{
     ViewData["Title"] = "Index";
@@ -19,7 +19,7 @@
                 @Html.DisplayNameFor(model => model.DateNews)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.CategoryList.First().Text)
+                @Html.DisplayNameFor(model => model.Category)
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.NewsAuthors)
@@ -37,7 +37,7 @@
                 @Html.DisplayFor(modelItem => item.DateNews)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.CategoryList.First().Text)
+                @Html.DisplayFor(modelItem => item.Category.CategoryName)
             </td>
             <td>
                 @Html.DisplayFor(modelItem=>item.NewsAuthors)

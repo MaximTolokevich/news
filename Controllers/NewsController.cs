@@ -5,7 +5,6 @@ using news.Services;
 using news.Controllers.Models;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using AutoMapper;
 using news.Services.Models;
 
@@ -13,6 +12,7 @@ namespace news.Controllers
 {
     public class NewsController : Controller
     {
+        
         private readonly IService<News> Service;
         private readonly IService<Services.Models.Category> CategoryService;
         private readonly IService<Services.Models.Author> AuthorService;
@@ -24,12 +24,13 @@ namespace news.Controllers
             CategoryService = _CategoryService;
             AuthorService = _AuthorService;
             map = mapper;
+            
         }
 
         // GET: News
         public IActionResult Index()
         {
-            var a = map.Map<IEnumerable<Services.Models.News>, IEnumerable<NewsViewModel> >(Service.GetAll());
+            var a = map.Map<IEnumerable<Services.Models.News>, IEnumerable<GetOptionsListsViewcs> >(Service.GetAll());
             return View(a);
         }
 
@@ -40,7 +41,7 @@ namespace news.Controllers
             {
                 return NotFound();
             }
-            var a = map.Map< News, NewsViewModel> (Service.GetAll().FirstOrDefault(m => m.Id == id));
+            var a = map.Map< News, GetOptionsListsViewcs> (Service.GetAll().FirstOrDefault(m => m.Id == id));
             
             if (a == null)
             {
@@ -53,23 +54,10 @@ namespace news.Controllers
         // GET: News/Create
         public IActionResult Create()
         {
-            //ViewBag.Category = CategoryService.GetAll()
-            //    .Select(x => new SelectListItem
-            //    {
-            //        Text = x.CategoryName,
-            //        Value = x.CategoryId.ToString()
-            //    }).ToList();
-            ViewBag.Category = new SelectList(CategoryService.GetAll(), "CategoryId", "CategoryName");
-
-            var authors =  AuthorService.GetAll()
-                .Select(a => new
-                {
-                    a.Id,
-                    a.FullName
-                }).ToList();
-            ViewBag.Authors = new MultiSelectList(authors, "Id", "FullName");
-
-            return View();
+            GetOptionsListsViewcs getOptions = new GetOptionsListsViewcs();   
+            getOptions.CategoryList = new SelectList(CategoryService.GetAll(), nameof(Models.Category.Id), nameof(Models.Category.CategoryName));
+            getOptions.NewsAuthors = map.Map<IEnumerable<Services.Models.Author>,IEnumerable<Models.Author>> (AuthorService.GetAll());
+            return View(getOptions);
         }
 
         // POST: News/Create
@@ -77,19 +65,21 @@ namespace news.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create( NewsViewModel news)
+        public IActionResult Create( GetOptionsListsViewcs news)
         {
-
+            var authors = map.Map<IEnumerable<Services.Models.Author>, IEnumerable<Models.Author>>(AuthorService.GetAll().Where(x => news.SelectedAuthors.Any(y => y == x.Id))).Select(x => x);
+            news.NewsAuthors = authors;
+            var category = map.Map<IEnumerable<Services.Models.Category>, IEnumerable<Models.Category>>(CategoryService.GetAll().Where(x => news.CategoryId == x.Id));
+            news.Category = category.First();
+            var a = map.Map<GetOptionsListsViewcs, News>(news);
             if (ModelState.IsValid)
 
-            {
-                var a = map.Map<  NewsViewModel, News> (news);
+            {      
                 Service.Create(a);
-                
                 return RedirectToAction(nameof(Index));
             }
             
-            return View(news);
+            return View(a);
         }
 
         // GET: News/Edit/5
@@ -99,7 +89,7 @@ namespace news.Controllers
             {
                 return NotFound();
             }
-            var a = map.Map<News, NewsViewModel >(Service.Get((int)id));
+            var a = map.Map<News, GetOptionsListsViewcs>(Service.Get((int)id));
             
             if (a == null)
             {
@@ -113,13 +103,13 @@ namespace news.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(int id,  NewsViewModel news)
+        public IActionResult Edit(int id, GetOptionsListsViewcs news)
         {
             if (id != news.Id)
             {
                 return NotFound();
             }
-            var a = map.Map<NewsViewModel,News >(news);
+            var a = map.Map<GetOptionsListsViewcs, News >(news);
             if (ModelState.IsValid)
             {
                 
@@ -129,7 +119,7 @@ namespace news.Controllers
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!NewsExists(news.Id))
+                    if (!NewsExists(a.Id))
                     {
                         return NotFound();
                     }

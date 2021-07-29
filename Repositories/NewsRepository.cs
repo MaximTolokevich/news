@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using news.Repositories.Data;
 using news.Repositories.Models;
 using System;
@@ -10,12 +9,11 @@ namespace news.Repositories
 {
     public class NewsRepository : IRepository<News>
     {
-        private NewsContext context;
-        private readonly IMapper map;
-        public NewsRepository(NewsContext newsContext,IMapper mapper) 
+        private readonly NewsContext context;
+        
+        public NewsRepository(NewsContext newsContext) 
         {
             context = newsContext;
-            map = mapper;
         }
         public bool Create(News news)
         {
@@ -23,13 +21,18 @@ namespace news.Repositories
             {
                 return false;
             }
-            List<Author> list = new List<Author>(); 
+
+            List<Author> list = new List<Author>();
             foreach (var item in news.NewsAuthors)
             {
                 context.Authors.Attach(item);
                 list.Add(context.Authors.Local.Single(x => x.Id == item.Id));
             }
+            Category category = news.Category;
+            context.Categories.Attach(category);
+            news.Category = category;
             news.NewsAuthors = list;
+
             context.News.Add(news);
             context.SaveChanges();
             return true;
@@ -57,13 +60,16 @@ namespace news.Repositories
             {
                 throw new ArgumentOutOfRangeException();
             }
-            return context.News.First(x=>x.Id==Id);
+            return context.News.Include(x=>x.Category)
+                .Include(x=>x.NewsAuthors)
+                .First(x=>x.Id==Id);
         }
 
         public IQueryable<News> GetAll()
         {
             
-            return context.News.Include(x => x.Category).Include(x=>x.NewsAuthors);
+            return context.News.Include(x => x.Category)
+                .Include(x=>x.NewsAuthors);
                 
         }
 

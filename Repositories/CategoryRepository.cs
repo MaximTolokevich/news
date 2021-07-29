@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using Microsoft.EntityFrameworkCore;
 using news.Repositories.Data;
 using news.Repositories.Models;
 
@@ -8,7 +9,7 @@ namespace news.Repositories
     public class CategoryRepository : IRepository<Category>
 
     {
-        private NewsContext context;
+        private readonly NewsContext context;
         public CategoryRepository(NewsContext newsContext)
         {
             context = newsContext;

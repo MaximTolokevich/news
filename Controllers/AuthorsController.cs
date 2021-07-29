@@ -1,29 +1,31 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using news.Controllers.Models;
 using news.Services;
+using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace news.Controllers
 {
     public class AuthorsController : Controller
     {
 
-        private readonly IService<Author> service;
+        private readonly IService<Services.Models.Author> service;
+        private readonly IMapper map;
         
 
-        public AuthorsController(IService<Author> _service)
+        public AuthorsController(IService<Services.Models.Author> _service,IMapper mapper)
         {
             service = _service;
-
+            map = mapper;
         }
 
         // GET: Authors
         public IActionResult Index()
         {
-            
-            return View( service.GetAll().ToList());
+            var a = map.Map<IEnumerable<Services.Models.Author>, IEnumerable<Author>>(service.GetAll());
+            return View(a);
         }
 
         // GET: Authors/Details/5
@@ -33,15 +35,14 @@ namespace news.Controllers
             {
                 return NotFound();
             }
-
-            var author =  service.GetAll()
-                .FirstOrDefault(m => m.Id == id);
-            if (author == null)
+            var a = map.Map<Services.Models.Author, Author>(service.GetAll().FirstOrDefault(m => m.Id == id));
+            
+            if (a == null)
             {
                 return NotFound();
             }
 
-            return View(author);
+            return View(a);
         }
 
         // GET: Authors/Create
@@ -59,7 +60,8 @@ namespace news.Controllers
         {
             if (ModelState.IsValid)
             {
-                service.Create(author);
+                var a = map.Map<Author, Services.Models.Author>(author);
+                service.Create(a);
 
                 return RedirectToAction(nameof(Index));
             }
@@ -74,12 +76,12 @@ namespace news.Controllers
                 return NotFound();
             }
 
-            var author = service.Get((int)id);
-            if (author == null)
+            var a = map.Map<Services.Models.Author, Author>(service.Get((int)id));
+            if (a == null)
             {
                 return NotFound();
             }
-            return View(author);
+            return View(a);
         }
 
         // POST: Authors/Edit/5
@@ -93,16 +95,16 @@ namespace news.Controllers
             {
                 return NotFound();
             }
-
+            var a = map.Map<Author, Services.Models.Author>(author);
             if (ModelState.IsValid)
             {
                 try
                 {
-                    service.Update(author);
+                    service.Update(a);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!AuthorExists(author.Id))
+                    if (!AuthorExists(a.Id))
                     {
                         return NotFound();
                     }
@@ -113,7 +115,7 @@ namespace news.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(author);
+            return View(a);
         }
 
         // GET: Authors/Delete/5
@@ -123,15 +125,15 @@ namespace news.Controllers
             {
                 return NotFound();
             }
-
-            var author =  service.GetAll()
-                .FirstOrDefault(m => m.Id == id);
-            if (author == null)
+            var a = map.Map< Services.Models.Author,Author > (service.GetAll().FirstOrDefault(m => m.Id == id));
+              
+                
+            if (a == null)
             {
                 return NotFound();
             }
 
-            return View(author);
+            return View(a);
         }
 
         // POST: Authors/Delete/5
@@ -139,12 +141,16 @@ namespace news.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult DeleteConfirmed(int id)
         {
-
-            service.Delete(id);
+            var a = map.Map<Services.Models.Author, Author>(service.Get(id));
+            service.Delete(a.Id);
 
             return RedirectToAction(nameof(Index));
         }
 
-        private bool AuthorExists(int id) => service.GetAll().Any(e => e.Id == id);
+        private bool AuthorExists(int id)
+        {
+            var a = map.Map<IEnumerable<Services.Models.Author>, IEnumerable< Author>>(service.GetAll());
+            return a.Any(e => e.Id == id);
+        }
     }
 }
