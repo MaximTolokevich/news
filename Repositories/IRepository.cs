@@ -13,8 +13,8 @@ namespace news.Repositories
         public bool Delete(int Id);
         
     }
-    public interface IChangePassword
+    public interface IPasswordManager
     {
-        public bool ChangePass(int id, string oldPass, string newPass);
+        public bool ChangePassword(int id, string oldPass, string newPass);
     }
 }

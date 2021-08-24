@@ -17,7 +17,7 @@ namespace news.Controllers.Models
         public string Password { get; set; }
         
         public string Email { get; set; }
-        public List<NewsViewModel> News { get; set; } = new List<NewsViewModel>();
+        public List<GetOptionsListsViewcs> News { get; set; } = new List<GetOptionsListsViewcs>();
     }
 
 }

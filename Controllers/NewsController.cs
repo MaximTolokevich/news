@@ -13,25 +13,26 @@ namespace news.Controllers
     public class NewsController : Controller
     {
         
-        private readonly IService<News> Service;
-        private readonly IService<Services.Models.Category> CategoryService;
-        private readonly IService<Services.Models.Author> AuthorService;
-        private readonly IMapper map;
+        private readonly IService<News> _service;
+        private readonly IService<Services.Models.Category> _categoryService;
+        private readonly IService<Services.Models.Author> _authorService;
+        private readonly IMapper _map;
 
-        public NewsController(IService<News> _service, IService<Services.Models.Category> _CategoryService, IService<Services.Models.Author> _AuthorService,IMapper mapper)
+        public NewsController(IService<News> Service, IService<Services.Models.Category> CategoryService, IService<Services.Models.Author> AuthorService,IMapper mapper)
         {
-            Service = _service;
-            CategoryService = _CategoryService;
-            AuthorService = _AuthorService;
-            map = mapper;
+            _service = Service;
+            _categoryService = CategoryService;
+            _authorService =AuthorService ;
+            _map = mapper;
             
         }
 
         // GET: News
         public IActionResult Index()
         {
-            var a = map.Map<IEnumerable<Services.Models.News>, IEnumerable<GetOptionsListsViewcs> >(Service.GetAll());
-            return View(a);
+            var model = _map.Map<IEnumerable<News>,
+                            IEnumerable<GetOptionsListsViewcs> >(_service.GetAll());
+            return View(model);
         }
 
         // GET: News/Details/5
@@ -41,22 +42,26 @@ namespace news.Controllers
             {
                 return NotFound();
             }
-            var a = map.Map< News, GetOptionsListsViewcs> (Service.GetAll().FirstOrDefault(m => m.Id == id));
-            
-            if (a == null)
+            var model = _map.Map< News,
+                                GetOptionsListsViewcs> (_service.GetAll()
+                                                            .FirstOrDefault(m => m.Id == id));
+            if (model == null)
             {
                 return NotFound();
             }
 
-            return View(a);
+            return View(model);
         }
 
         // GET: News/Create
         public IActionResult Create()
         {
             GetOptionsListsViewcs getOptions = new GetOptionsListsViewcs();   
-            getOptions.CategoryList = new SelectList(CategoryService.GetAll(), nameof(Models.Category.Id), nameof(Models.Category.CategoryName));
-            getOptions.NewsAuthors = map.Map<IEnumerable<Services.Models.Author>,IEnumerable<Models.Author>> (AuthorService.GetAll());
+            getOptions.CategoryList = new SelectList(_categoryService.GetAll(),
+                                                        nameof(Models.Category.Id),
+                                                        nameof(Models.Category.CategoryName));
+            getOptions.NewsAuthors = _map.Map<IEnumerable<Services.Models.Author>,
+                                                IEnumerable<Models.Author>> (_authorService.GetAll());
             return View(getOptions);
         }
 
@@ -67,19 +72,19 @@ namespace news.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Create( GetOptionsListsViewcs news)
         {
-            var authors = map.Map<IEnumerable<Services.Models.Author>, IEnumerable<Models.Author>>(AuthorService.GetAll().Where(x => news.SelectedAuthors.Any(y => y == x.Id))).Select(x => x);
+            var authors = _map.Map<IEnumerable<Services.Models.Author>, IEnumerable<Models.Author>>(_authorService.GetAll().Where(x => news.SelectedAuthors.Any(y => y == x.Id))).Select(x => x);
             news.NewsAuthors = authors;
-            var category = map.Map<IEnumerable<Services.Models.Category>, IEnumerable<Models.Category>>(CategoryService.GetAll().Where(x => news.CategoryId == x.Id));
+            var category = _map.Map<IEnumerable<Services.Models.Category>, IEnumerable<Models.Category>>(_categoryService.GetAll().Where(x => news.CategoryId == x.Id));
             news.Category = category.First();
-            var a = map.Map<GetOptionsListsViewcs, News>(news);
+            var model = _map.Map<GetOptionsListsViewcs, News>(news);
             if (ModelState.IsValid)
 
             {      
-                Service.Create(a);
+                _service.Create(model);
                 return RedirectToAction(nameof(Index));
             }
             
-            return View(a);
+            return View(model);
         }
 
         // GET: News/Edit/5
@@ -89,13 +94,13 @@ namespace news.Controllers
             {
                 return NotFound();
             }
-            var a = map.Map<News, GetOptionsListsViewcs>(Service.Get((int)id));
+            var model = _map.Map<News, GetOptionsListsViewcs>(_service.Get((int)id));
             
-            if (a == null)
+            if (model == null)
             {
                 return NotFound();
             }
-            return View(a);
+            return View(model);
         }
 
         // POST: News/Edit/5
@@ -109,17 +114,17 @@ namespace news.Controllers
             {
                 return NotFound();
             }
-            var a = map.Map<GetOptionsListsViewcs, News >(news);
+            var model = _map.Map<GetOptionsListsViewcs, News >(news);
             if (ModelState.IsValid)
             {
                 
                 try
                 {
-                    Service.Update(a);
+                    _service.Update(model);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!NewsExists(a.Id))
+                    if (!NewsExists(model.Id))
                     {
                         return NotFound();
                     }
@@ -130,7 +135,7 @@ namespace news.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(a);
+            return View(model);
         }
 
         // GET: News/Delete/5
@@ -141,14 +146,13 @@ namespace news.Controllers
                 return NotFound();
             }
 
-            var news =  Service.GetAll()
-                .FirstOrDefault(m => m.Id == id);
-            if (news == null)
+            var model = _map.Map<News, GetOptionsListsViewcs>(_service.GetAll().FirstOrDefault(m => m.Id == id));
+            if (model == null)
             {
                 return NotFound();
             }
 
-            return View(news);
+            return View(model);
         }
 
         // POST: News/Delete/5
@@ -156,13 +160,15 @@ namespace news.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult DeleteConfirmed(int id)
         {
-            Service.Delete(id);
+            var model = _map.Map<News, GetOptionsListsViewcs>(_service.Get(id));
+            _service.Delete(model.Id);
             return RedirectToAction(nameof(Index));
         }
 
         private bool NewsExists(int id)
         {
-            return Service.GetAll().Any(x => x.Id == id);
+            var model = _map.Map<IEnumerable<News>, IEnumerable<GetOptionsListsViewcs>>(_service.GetAll());
+            return model.Any(x => x.Id == id);
         }
     }
 }

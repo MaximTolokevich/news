@@ -9,13 +9,13 @@ namespace news.Services
 {
     public class AuthorService : IService<Author>
     {
-        private readonly IMapper map;
-        private readonly IRepository<Repositories.Models.Author> rep;
+        private readonly IMapper _map;
+        private readonly IRepository<Repositories.Models.Author> _rep;
 
         public AuthorService(IRepository<Repositories.Models.Author> repository,IMapper mapper)
         {
-            rep = repository;
-            map = mapper;
+            _rep = repository;
+            _map = mapper;
         }
 
         public bool Create(Author item)
@@ -24,36 +24,36 @@ namespace news.Services
             {
                 throw new System.ArgumentNullException(nameof(item));
             }
-            var a = map.Map<Author,
+            var a = _map.Map<Author,
                 Repositories.Models.Author>
                 (item);
-            return rep.Create(a);
+            return _rep.Create(a);
         }
 
-        public bool Delete(int Id) => rep.Delete(Id);
+        public bool Delete(int Id) => _rep.Delete(Id);
 
         public Author Get(int Id)
         {
-            var a = map.Map<Repositories.Models.Author,
+            var a = _map.Map<Repositories.Models.Author,
                 Author>
-                (rep.Get(Id));
+                (_rep.Get(Id));
             return a;
         }
 
         public IEnumerable<Author> GetAll()
         {
-            var a = map.Map<IEnumerable<Repositories.Models.Author>,
+            var a = _map.Map<IEnumerable<Repositories.Models.Author>,
                 IEnumerable<Author>>
-                (rep.GetAll());
+                (_rep.GetAll());
             return a;
         }
 
         public bool Update(Author item)
         {
-            var a = map.Map<Author,
+            var a = _map.Map<Author,
                 Repositories.Models.Author>
                 (item);
-            return rep.Update(a);
+            return _rep.Update(a);
         }
     }
 }

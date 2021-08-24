@@ -40,7 +40,8 @@
                 @Html.DisplayFor(modelItem => item.Category.CategoryName)
             </td>
             <td>
-                @Html.DisplayFor(modelItem=>item.NewsAuthors)
+                @foreach (var author in item.NewsAuthors)
+                    @Html.Raw("<p>" + Html.DisplayName(author.FullName) + "</p>")
             </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |

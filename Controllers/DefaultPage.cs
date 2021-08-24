@@ -5,11 +5,11 @@ using news.Models;
 
 namespace WebApplication3.Controllers
 {
-    public class HomeController : Controller
+    public class DefaultPage : Controller
     {
-        private readonly ILogger<HomeController> _logger;
+        private readonly ILogger<DefaultPage> _logger;
 
-        public HomeController(ILogger<HomeController> logger)
+        public DefaultPage(ILogger<DefaultPage> logger)
         {
             _logger = logger;
         }

@@ -6,28 +6,28 @@ using System.Linq;
 
 namespace news.Repositories
 {
-    public class AuthorRepository : IRepository<Author>, IChangePassword
+    public class AuthorRepository : IRepository<Author>, IPasswordManager
     {
-        private readonly NewsContext context;
+        private readonly NewsContext _context;
         
         public AuthorRepository(NewsContext newsContext)
         {
-            context = newsContext;
+            _context = newsContext;
         }
 
-        public bool ChangePass(int id, string oldPass, string newPass)
+        public bool ChangePassword(int id, string oldPass, string newPass)
         {
             if (id < 1 || string.IsNullOrEmpty(oldPass) || string.IsNullOrEmpty(newPass))
             {
                 return false;
             }
-            var findAuthor = context.Authors.Find(id);
+            var findAuthor = _context.Authors.Find(id);
             if (findAuthor == null || oldPass != findAuthor.Password)
             {
                 return false;
             }
             findAuthor.Password = newPass;
-            context.SaveChanges();
+            _context.SaveChanges();
             return true;
         }
 
@@ -37,14 +37,14 @@ namespace news.Repositories
             {
                 throw new ArgumentNullException();
             }
-            var checkUniqueAuthor = context.Authors.Find(author.Id);
+            var checkUniqueAuthor = _context.Authors.Find(author.Id);
             if (checkUniqueAuthor != null)
             {
                 return false;
             }
-            author.FullName = author.FirstName + " " + author.LastName; 
-            context.Authors.Add(author);
-            context.SaveChanges();
+            author.FullName = author.FirstName + " " + author.LastName;
+            _context.Authors.Add(author);
+            _context.SaveChanges();
             return true;
         }
 
@@ -54,20 +54,20 @@ namespace news.Repositories
             {
                 return false;
             }
-            var findAuthor = context.Authors.Find(Id);
+            var findAuthor = _context.Authors.Find(Id);
             if (findAuthor == null)
             {
                 return false;
             }
-            context.Authors.Remove(findAuthor);
-            context.SaveChanges();
+            _context.Authors.Remove(findAuthor);
+            _context.SaveChanges();
             return true;
         }
 
         public IQueryable<Author> GetAll()
         {
 
-            return context.Authors;
+            return _context.Authors;
         }
 
         public Author Get(int id)
@@ -76,7 +76,7 @@ namespace news.Repositories
             {
                 throw new ArgumentOutOfRangeException();
             }
-            return context.Authors.First(x => x.Id == id);
+            return _context.Authors.First(x => x.Id == id);
         }
 
         public bool Update(Author author)
@@ -85,7 +85,7 @@ namespace news.Repositories
             {
                 throw new ArgumentNullException();
             }
-            var findAuthor = context.Authors.Find(author.Id);
+            var findAuthor = _context.Authors.Find(author.Id);
             if (findAuthor == null)
             {
                 return false;
@@ -96,7 +96,7 @@ namespace news.Repositories
             findAuthor.Email = author.Email;
             findAuthor.Password = author.Password;
 
-            context.SaveChanges();
+            _context.SaveChanges();
             return true;
         }
     }

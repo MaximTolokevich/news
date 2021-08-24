@@ -9,10 +9,10 @@ namespace news.Repositories
     public class CategoryRepository : IRepository<Category>
 
     {
-        private readonly NewsContext context;
+        private readonly NewsContext _context;
         public CategoryRepository(NewsContext newsContext)
         {
-            context = newsContext;
+            _context = newsContext;
         }
         public bool Create(Category category)
         {
@@ -20,7 +20,7 @@ namespace news.Repositories
             {
                 throw new ArgumentNullException();
             }
-            var CheckCategoryExist = context.Categories.Find(category.Id);
+            var CheckCategoryExist = _context.Categories.Find(category.Id);
             if (CheckCategoryExist!=null)
             {
                 return false;
@@ -30,8 +30,8 @@ namespace news.Repositories
                 Id = category.Id,
                 CategoryName = category.CategoryName
             };
-            context.Categories.Add(newCategory);
-            context.SaveChanges();
+            _context.Categories.Add(newCategory);
+            _context.SaveChanges();
             return true;
         }
 
@@ -41,26 +41,26 @@ namespace news.Repositories
             {
                 return false;
             }
-            var CheckCategoryExist = context.Categories.Find(Id);
+            var CheckCategoryExist = _context.Categories.Find(Id);
              
             if (CheckCategoryExist == null)
             {
                 return false;
             }
-            
-            context.Categories.Remove(CheckCategoryExist);
-            context.SaveChanges();
+
+            _context.Categories.Remove(CheckCategoryExist);
+            _context.SaveChanges();
             return true;
         }
 
         public Category Get(int Id)
         {
-            return  context.Categories.First(x => x.Id == Id);
+            return _context.Categories.First(x => x.Id == Id);
         }
 
         public IQueryable<Category> GetAll()
         {
-            return context.Categories;
+            return _context.Categories;
         }
 
         public bool Update(Category category)
@@ -69,13 +69,13 @@ namespace news.Repositories
             {
                 return false;
             }
-            var findAuthor = context.Categories.Find(category.Id);
+            var findAuthor = _context.Categories.Find(category.Id);
             if (findAuthor== null)
             {
                 return false;
             }
             findAuthor.CategoryName = category.CategoryName;
-            context.SaveChanges();
+            _context.SaveChanges();
             return true;
         }
     }

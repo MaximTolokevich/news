@@ -9,11 +9,11 @@ namespace news.Repositories
 {
     public class NewsRepository : IRepository<News>
     {
-        private readonly NewsContext context;
+        private readonly NewsContext _context;
         
         public NewsRepository(NewsContext newsContext) 
         {
-            context = newsContext;
+            _context = newsContext;
         }
         public bool Create(News news)
         {
@@ -25,16 +25,16 @@ namespace news.Repositories
             List<Author> list = new List<Author>();
             foreach (var item in news.NewsAuthors)
             {
-                context.Authors.Attach(item);
-                list.Add(context.Authors.Local.Single(x => x.Id == item.Id));
+                _context.Authors.Attach(item);
+                list.Add(_context.Authors.Local.Single(x => x.Id == item.Id));
             }
             Category category = news.Category;
-            context.Categories.Attach(category);
+            _context.Categories.Attach(category);
             news.Category = category;
             news.NewsAuthors = list;
 
-            context.News.Add(news);
-            context.SaveChanges();
+            _context.News.Add(news);
+            _context.SaveChanges();
             return true;
         }
 
@@ -44,13 +44,13 @@ namespace news.Repositories
             {
                 return false;
             }
-            var CheckNewsexist = context.News.Find(Id);
+            var CheckNewsexist = _context.News.Find(Id);
             if (CheckNewsexist==null)
             {
                 return false;
             }
-            context.News.Remove(CheckNewsexist);
-            context.SaveChanges();
+            _context.News.Remove(CheckNewsexist);
+            _context.SaveChanges();
             return true;
         }
 
@@ -60,7 +60,7 @@ namespace news.Repositories
             {
                 throw new ArgumentOutOfRangeException();
             }
-            return context.News.Include(x=>x.Category)
+            return _context.News.Include(x=>x.Category)
                 .Include(x=>x.NewsAuthors)
                 .First(x=>x.Id==Id);
         }
@@ -68,7 +68,7 @@ namespace news.Repositories
         public IQueryable<News> GetAll()
         {
             
-            return context.News.Include(x => x.Category)
+            return _context.News.Include(x => x.Category)
                 .Include(x=>x.NewsAuthors);
                 
         }
@@ -79,14 +79,14 @@ namespace news.Repositories
             {
                 throw new ArgumentNullException();
             }
-            var CheckNewExist = context.News.Find(news.Id);
+            var CheckNewExist = _context.News.Find(news.Id);
             if (CheckNewExist==null)
             {
                 return false;
             }
             CheckNewExist.newsContent = news.newsContent;
             CheckNewExist.DateNews = news.DateNews;
-            context.SaveChanges();
+            _context.SaveChanges();
             return true;
         }
     }

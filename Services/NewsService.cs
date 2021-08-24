@@ -9,48 +9,48 @@ namespace news.Services
 {
     public class NewsService : IService<News>
     {
-        private readonly IMapper map;
-        private readonly IRepository<Repositories.Models.News> rep;
+        private readonly IMapper _map;
+        private readonly IRepository<Repositories.Models.News> _rep;
         public NewsService(IRepository<Repositories.Models.News> repository, IMapper mapper)
         {
-            map = mapper;
-            rep = repository; 
+            _map = mapper;
+            _rep = repository; 
         }
         public bool Create(News item)
         {
-           var a = map.Map<News,
+           var a = _map.Map<News,
                Repositories.Models.News>
                (item);
-           return  rep.Create(a);
+           return _rep.Create(a);
         }
 
         public bool Delete(int Id)
         {
-            return rep.Delete(Id);
+            return _rep.Delete(Id);
         }
 
         public News Get(int Id)
         {
-            var a = map.Map< Repositories.Models.News,
+            var a = _map.Map< Repositories.Models.News,
                 News > 
-                (rep.Get(Id));
+                (_rep.Get(Id));
             return a;
         }
 
         public IEnumerable<News> GetAll()
         {
-            var a = map.Map<IEnumerable<Repositories.Models.News>,
+            var a = _map.Map<IEnumerable<Repositories.Models.News>,
                 IEnumerable<News>>
-                (rep.GetAll());
+                (_rep.GetAll());
             return a;
         }
 
         public bool Update(News item)
         {
-            var a = map.Map<News,
+            var a = _map.Map<News,
                 Repositories.Models.News>
                 (item);
-            return rep.Update(a);
+            return _rep.Update(a);
         }
     }
 }

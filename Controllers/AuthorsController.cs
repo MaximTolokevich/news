@@ -11,21 +11,21 @@ namespace news.Controllers
     public class AuthorsController : Controller
     {
 
-        private readonly IService<Services.Models.Author> service;
-        private readonly IMapper map;
+        private readonly IService<Services.Models.Author> _service;
+        private readonly IMapper _map;
         
 
-        public AuthorsController(IService<Services.Models.Author> _service,IMapper mapper)
+        public AuthorsController(IService<Services.Models.Author> service,IMapper mapper)
         {
-            service = _service;
-            map = mapper;
+            _service = service;
+            _map = mapper;
         }
 
         // GET: Authors
         public IActionResult Index()
         {
-            var a = map.Map<IEnumerable<Services.Models.Author>, IEnumerable<Author>>(service.GetAll());
-            return View(a);
+            var model = _map.Map<IEnumerable<Services.Models.Author>, IEnumerable<Author>>(_service.GetAll());
+            return View(model);
         }
 
         // GET: Authors/Details/5
@@ -35,14 +35,14 @@ namespace news.Controllers
             {
                 return NotFound();
             }
-            var a = map.Map<Services.Models.Author, Author>(service.GetAll().FirstOrDefault(m => m.Id == id));
+            var model = _map.Map<Services.Models.Author, Author>(_service.GetAll().FirstOrDefault(m => m.Id == id));
             
-            if (a == null)
+            if (model == null)
             {
                 return NotFound();
             }
 
-            return View(a);
+            return View(model);
         }
 
         // GET: Authors/Create
@@ -60,8 +60,8 @@ namespace news.Controllers
         {
             if (ModelState.IsValid)
             {
-                var a = map.Map<Author, Services.Models.Author>(author);
-                service.Create(a);
+                var model = _map.Map<Author, Services.Models.Author>(author);
+                _service.Create(model);
 
                 return RedirectToAction(nameof(Index));
             }
@@ -76,12 +76,12 @@ namespace news.Controllers
                 return NotFound();
             }
 
-            var a = map.Map<Services.Models.Author, Author>(service.Get((int)id));
-            if (a == null)
+            var model = _map.Map<Services.Models.Author, Author>(_service.Get((int)id));
+            if (model == null)
             {
                 return NotFound();
             }
-            return View(a);
+            return View(model);
         }
 
         // POST: Authors/Edit/5
@@ -95,27 +95,24 @@ namespace news.Controllers
             {
                 return NotFound();
             }
-            var a = map.Map<Author, Services.Models.Author>(author);
+            if (!AuthorExists(author.Id))
+            {
+                return NotFound();
+            }
+            var model = _map.Map<Author, Services.Models.Author>(author);
             if (ModelState.IsValid)
             {
                 try
                 {
-                    service.Update(a);
+                    _service.Update(model);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!AuthorExists(a.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
+                        throw;              
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(a);
+            return View(model);
         }
 
         // GET: Authors/Delete/5
@@ -125,15 +122,15 @@ namespace news.Controllers
             {
                 return NotFound();
             }
-            var a = map.Map< Services.Models.Author,Author > (service.GetAll().FirstOrDefault(m => m.Id == id));
+            var model = _map.Map< Services.Models.Author,Author > (_service.GetAll().FirstOrDefault(m => m.Id == id));
               
                 
-            if (a == null)
+            if (model == null)
             {
                 return NotFound();
             }
 
-            return View(a);
+            return View(model);
         }
 
         // POST: Authors/Delete/5
@@ -141,16 +138,16 @@ namespace news.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult DeleteConfirmed(int id)
         {
-            var a = map.Map<Services.Models.Author, Author>(service.Get(id));
-            service.Delete(a.Id);
+            var model = _map.Map<Services.Models.Author, Author>(_service.Get(id));
+            _service.Delete(model.Id);
 
             return RedirectToAction(nameof(Index));
         }
 
         private bool AuthorExists(int id)
         {
-            var a = map.Map<IEnumerable<Services.Models.Author>, IEnumerable< Author>>(service.GetAll());
-            return a.Any(e => e.Id == id);
+            var model = _map.Map<IEnumerable<Services.Models.Author>, IEnumerable< Author>>(_service.GetAll());
+            return model.Any(e => e.Id == id);
         }
     }
 }

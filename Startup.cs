@@ -10,7 +10,6 @@ using news.Repositories.Models;
 using news.Repositories.Data;
 using news.Services;
 using Microsoft.EntityFrameworkCore;
-using news.Controllers;
 
 namespace news
 {
@@ -29,6 +28,7 @@ namespace news
             var mappingConfig = new MapperConfiguration(mc =>
                     mc.AddProfile(new MappingProfile())
                 );
+            mappingConfig.AssertConfigurationIsValid();
             IMapper mapper = mappingConfig.CreateMapper();
             services.AddSingleton(mapper);
             services.AddControllersWithViews();
@@ -43,6 +43,7 @@ namespace news
             services.AddScoped<IService<Services.Models.Category>, CategoryService>();
             services.AddScoped<IRepository<News>, NewsRepository>();
             services.AddScoped<IService<Services.Models.News>, NewsService>();
+            
 
         }
 
@@ -52,6 +53,8 @@ namespace news
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                app.UseAuthentication();
+                app.UseAuthorization();
             }
             else
             {
@@ -70,7 +73,7 @@ namespace news
             {
                 endpoints.MapControllerRoute(
                     name: "default",
-                    pattern: "{controller=Home}/{action=Index}/{id?}");
+                    pattern: "{controller=DefaultPage}/{action=Index}/{id?}");
             });
         }
     }

@@ -11,6 +11,6 @@ namespace news.Controllers.Models
         [Required]
         public string CategoryName { get; set; }
         
-        public IEnumerable<NewsViewModel> News { get; set; }
+        public IEnumerable<GetOptionsListsViewcs> News { get; set; }
     }
 }
