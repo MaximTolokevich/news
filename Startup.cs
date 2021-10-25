@@ -1,15 +1,18 @@
-using AutoMapper;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using news.Extensions.Mapping;
 using news.Repositories;
-using news.Repositories.Models;
 using news.Repositories.Data;
+using news.Repositories.Models;
 using news.Services;
-using Microsoft.EntityFrameworkCore;
 
 namespace news
 {
@@ -32,9 +35,9 @@ namespace news
             IMapper mapper = mappingConfig.CreateMapper();
             services.AddSingleton(mapper);
             services.AddControllersWithViews();
-            services.AddDbContext<NewsContext>(options=>options.EnableSensitiveDataLogging()
+            services.AddDbContext<NewsContext>(options => options.EnableSensitiveDataLogging()
             .EnableServiceProviderCaching(false)
-            .UseMySql(Configuration.GetConnectionString("news"),new MySqlServerVersion(new System.Version(8, 0, 24))),
+            .UseMySql(Configuration.GetConnectionString("news"), new MySqlServerVersion(new System.Version(8, 0, 24))),
             ServiceLifetime.Transient
             );
             services.AddScoped<IRepository<Author>, AuthorRepository>();
@@ -43,8 +46,19 @@ namespace news
             services.AddScoped<IService<Services.Models.Category>, CategoryService>();
             services.AddScoped<IRepository<News>, NewsRepository>();
             services.AddScoped<IService<Services.Models.News>, NewsService>();
-            
 
+            services.AddDefaultIdentity<IdentityUser>(opt => opt.SignIn.RequireConfirmedAccount = true)
+                .AddEntityFrameworkStores<NewsContext>();
+            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+        .AddCookie(options => //CookieAuthenticationOptions
+        {
+            options.LoginPath = new PathString("/Account/Login");
+        });
+            services.Configure<IdentityOptions>(opt =>
+            {
+                opt.Password.RequireNonAlphanumeric = false;
+                
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -67,6 +81,8 @@ namespace news
 
             app.UseRouting();
 
+
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
@@ -74,6 +90,7 @@ namespace news
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller=DefaultPage}/{action=Index}/{id?}");
+                endpoints.MapRazorPages();
             });
         }
     }

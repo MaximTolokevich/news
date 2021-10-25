@@ -1,10 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using news.Repositories.Models;
 using System;
 
 namespace news.Repositories.Data
 {
-    public class NewsContext:DbContext
+    public class NewsContext:IdentityDbContext
 
     {
         public DbSet<News> News { get; set; }
